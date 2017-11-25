@@ -21,6 +21,11 @@ public class MainActivity extends AppCompatActivity {
 
     public static final String LOG = "MyLogs";
     public static final String URL = "https://www.w3schools.com/w3images/lights.jpg";
+    public static final String URL1 = "https://nn.by/img/w662h445d1crop1/photos/z_2017_11/sluck2017-wfdy4.jpg";
+    public static final String URL2 = "https://nn.by/img/w924d4/photos/z_2017_10/786a4922-l02ue.jpg";
+    public static final String URL3 = "https://nn.by/img/w924d4/photos/z_2017_10/786a5165-xe0pd.jpg";
+
+
     ImageView mPhoto;
     ImageView mPhoto2;
     ImageView mPhoto3;
@@ -50,13 +55,13 @@ public class MainActivity extends AppCompatActivity {
                         Pen pen = Pen.getInstance();
                         pen.enqueue(request);
 
-                        ImageRequest request2 = new ImageRequest(URL, new WeakReference<ImageView>(mPhoto2));
+                        ImageRequest request2 = new ImageRequest(URL1, new WeakReference<ImageView>(mPhoto2));
                         pen.enqueue(request2);
 
-                        ImageRequest request3 = new ImageRequest(URL, new WeakReference<ImageView>(mPhoto3));
+                        ImageRequest request3 = new ImageRequest(URL2, new WeakReference<ImageView>(mPhoto3));
                         pen.enqueue(request3);
 
-                        ImageRequest request4 = new ImageRequest(URL, new WeakReference<ImageView>(mPhoto4));
+                        ImageRequest request4 = new ImageRequest(URL3, new WeakReference<ImageView>(mPhoto4));
                         pen.enqueue(request4);
                         break;
                     case R.id.button2:

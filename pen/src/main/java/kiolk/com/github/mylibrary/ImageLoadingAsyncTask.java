@@ -22,7 +22,10 @@ public class ImageLoadingAsyncTask extends AsyncTask<ImageRequest, Void, ImageRe
         super.onPostExecute(imageResult);
         if (imageResult.getBitmap() != null){
             ImageView imageView = imageResult.getRequest().getmTarget().get();
-            imageView.setImageBitmap(imageResult.getBitmap());
+            //maybe work as control flipping images
+            if(imageView.getTag().equals(imageResult.getRequest().getmUrl())) {
+                imageView.setImageBitmap(imageResult.getBitmap());
+            }
         }else{
             //Not very good idea show toast from AsyncTask only for example
             Toast.makeText(imageResult.getRequest().getmTarget().get().getContext(),

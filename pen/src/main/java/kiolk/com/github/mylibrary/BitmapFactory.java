@@ -24,6 +24,15 @@ public class BitmapFactory {
         int reqHeight = result.getRequest().getHeight();
         int reqWidth = result.getRequest().getWidth();
 
+        //check exist bitmap in LruCache and set on result
+        synchronized (Pen.getInstance().lock) {
+            if (Pen.getBitmapFromLruCache(url) != null) {
+                result.setBitmap(Pen.getBitmapFromLruCache(url));
+                Log.d(LOG, "Set bitmap from LruCache");
+                return result;
+            }
+        }
+
         try {
 
             InputStream stream = new URL(url).openStream();
@@ -51,6 +60,11 @@ public class BitmapFactory {
             Log.d(LOG, "Height: " + options.outHeight + ". Width: " + options.outWidth + ". bmp: " + options.inBitmap);
 //            bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length, null);
             result.setBitmap(bmp);
+
+            //add file to LruCache
+            synchronized (Pen.getInstance().lock) {
+                Pen.addBitmapForLruCache(result.getRequest().getmUrl(), result.getBitmap());
+            }
             return result;
 
         } catch (IOException e) {

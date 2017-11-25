@@ -1,6 +1,8 @@
 package kiolk.com.github.mylibrary;
 
+import android.graphics.Bitmap;
 import android.util.Log;
+import android.util.LruCache;
 import android.view.ViewTreeObserver;
 import android.widget.ImageView;
 
@@ -19,12 +21,27 @@ public class Pen {
 
     BlockingDeque<ImageRequest> queue;
     ExecutorService executor;
+    static LruCache<String, Bitmap> bitmapLruCache;
+    Object lock;
 
     private static Pen instance = null;
 
     protected Pen() {
         queue = new LinkedBlockingDeque<>();
         executor = Executors.newFixedThreadPool(3);
+        lock = new Object();
+
+        //initialization of LruCache
+        final int maxMemory = (int) (Runtime.getRuntime().maxMemory() / 1024);
+        final int cacheSize = maxMemory / 4;
+        Log.d(LOG, "maxMemory = " + maxMemory + ". MaxMemory from Runtime: "
+                + Runtime.getRuntime().maxMemory() + ". CacheSize: " + cacheSize);
+        bitmapLruCache = new LruCache<String, Bitmap>(cacheSize) {
+            @Override
+            protected int sizeOf(String key, Bitmap value) {
+                return value.getByteCount() / 1024;
+            }
+        };
     }
 
     public static Pen getInstance() {
@@ -34,6 +51,9 @@ public class Pen {
         return instance;
     }
 
+    protected LruCache<String, Bitmap> getBitmapLruCache() {
+        return bitmapLruCache;
+    }
 
     public void enqueue(ImageRequest imageRequest) {
 
@@ -88,7 +108,7 @@ public class Pen {
                 //???? Why show before if?
 //                v.getViewTreeObserver().removeOnPreDrawListener(this);
 
-                if(v.getWidth() > 0 && v.getHeight() > 0){
+                if (v.getWidth() > 0 && v.getHeight() > 0) {
                     Log.d(LOG, "Image view" + request.getmTarget().get().toString() + " start draw");
                     request.setWidth(v.getWidth());
                     request.setHeight(v.getHeight());
@@ -102,5 +122,17 @@ public class Pen {
         });
     }
 
+    //add bitmap for LruCache
+    protected static void addBitmapForLruCache(String key, Bitmap bitmap) {
+        if (getBitmapFromLruCache(key) == null) {
+            bitmapLruCache.put(key, bitmap);
+            Log.d(LOG, "Add bitmap by key: " + key);
+        }
+    }
 
+    //get bitmap from LruCache
+    protected static Bitmap getBitmapFromLruCache(String key){
+        Log.d(LOG, "Try bitmap by key " + key);
+        return bitmapLruCache.get(key);
+    }
 }
