@@ -12,6 +12,8 @@ public class ImageRequest {
 
     private String mUrl;
     private WeakReference<ImageView> mTarget;
+    private int width;
+    private int height;
 
     public ImageRequest(String mUrl, WeakReference<ImageView> mTarget) {
         this.mUrl = mUrl;
@@ -32,5 +34,21 @@ public class ImageRequest {
 
     public void setmTarget(WeakReference<ImageView> mTarget) {
         this.mTarget = mTarget;
+    }
+
+    public int getWidth() {
+        return width;
+    }
+
+    public void setWidth(int width) {
+        this.width = width;
+    }
+
+    public int getHeight() {
+        return height;
+    }
+
+    public void setHeight(int height) {
+        this.height = height;
     }
 }

@@ -12,13 +12,21 @@ import android.widget.Toast;
 
 import java.lang.ref.WeakReference;
 
+import kiolk.com.github.mylibrary.ImageRequest;
+import kiolk.com.github.mylibrary.Pen;
+
+import static kiolk.com.github.mylibrary.Utils.LOG;
+
 public class MainActivity extends AppCompatActivity {
 
     public static final String LOG = "MyLogs";
     public static final String URL = "https://www.w3schools.com/w3images/lights.jpg";
     ImageView mPhoto;
     ImageView mPhoto2;
+    ImageView mPhoto3;
+    ImageView mPhoto4;
     Button mButton;
+    Button getmButtonShowView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -27,20 +35,43 @@ public class MainActivity extends AppCompatActivity {
         mPhoto = (ImageView) findViewById(R.id.picture_image_view);
         mPhoto2 = findViewById(R.id.picture2_image_view);
         mButton = findViewById(R.id.button);
+        getmButtonShowView = (Button) findViewById(R.id.button2);
+        mPhoto3 = (ImageView) findViewById(R.id.picture3_image_view);
+        mPhoto4 = (ImageView) findViewById(R.id.picture4_image_view);
 
 
         View.OnClickListener click = new View.OnClickListener() {
             @Override
             public void onClick(View view) {
 //                new ImageDownloadAsyncTask(new ResultImageLoaded()).execute(URL);
+                switch (view.getId()) {
+                    case R.id.button:
+                        ImageRequest request = new ImageRequest(URL, new WeakReference<ImageView>(mPhoto));
+                        Pen pen = Pen.getInstance();
+                        pen.enqueue(request);
 
-                ImageRequest request = new ImageRequest(URL, new WeakReference<ImageView>(mPhoto));
-                Pen pen = Pen.getInstance();
-                pen.enqueue(request);
+                        ImageRequest request2 = new ImageRequest(URL, new WeakReference<ImageView>(mPhoto2));
+                        pen.enqueue(request2);
 
+                        ImageRequest request3 = new ImageRequest(URL, new WeakReference<ImageView>(mPhoto3));
+                        pen.enqueue(request3);
+
+                        ImageRequest request4 = new ImageRequest(URL, new WeakReference<ImageView>(mPhoto4));
+                        pen.enqueue(request4);
+                        break;
+                    case R.id.button2:
+                        Log.d(LOG, "Press button show view");
+                        mPhoto3.getLayoutParams().height = 200;
+                        mPhoto3.getLayoutParams().width = 200;
+                        mPhoto3.requestLayout();
+                        break;
+                    default:
+                        break;
+                }
             }
         };
         mButton.setOnClickListener(click);
+        getmButtonShowView.setOnClickListener(click);
 
 //        BitmapFactory bitmapFactory = new BitmapFactory();
 //        Bitmap bmp = BitmapFactory.decodeResource(getResources(), R.drawable.patch);
@@ -52,7 +83,7 @@ public class MainActivity extends AppCompatActivity {
         options.inJustDecodeBounds = true;
         BitmapFactory.decodeResource(getResources(), R.drawable.patch, options);
         Log.d(LOG, "Height: " + options.outHeight + ". Width: " + options.outWidth + ". bmp: " + options.inBitmap);
-        options.inJustDecodeBounds=false;
+        options.inJustDecodeBounds = false;
         options.inSampleSize = calculateInSimpleSize(options, 100, 100);
         Bitmap bmp = BitmapFactory.decodeResource(getResources(), R.drawable.patch, options);
         int size = bmp.getByteCount();
@@ -62,17 +93,17 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    public static int calculateInSimpleSize (BitmapFactory.Options pOptions, int height, int width){
+    public static int calculateInSimpleSize(BitmapFactory.Options pOptions, int height, int width) {
         int outHeight = pOptions.outHeight;
         int outWidth = pOptions.outWidth;
         int inSimpleSize = 1;
 
-        if(outHeight > height || outWidth > width){
-            outHeight = outWidth/2;
-            outWidth = outWidth/2;
-            while ((outWidth/inSimpleSize) >= width && (outWidth/inSimpleSize) >= height){
-                outHeight = outWidth/2;
-                outWidth = outWidth/2;
+        if (outHeight > height || outWidth > width) {
+            outHeight = outWidth / 2;
+            outWidth = outWidth / 2;
+            while ((outWidth / inSimpleSize) >= width && (outWidth / inSimpleSize) >= height) {
+                outHeight = outWidth / 2;
+                outWidth = outWidth / 2;
                 inSimpleSize *= 2;
             }
             Log.d(LOG, "inSimpleSize: " + inSimpleSize);
@@ -80,7 +111,7 @@ public class MainActivity extends AppCompatActivity {
         return inSimpleSize;
     }
 
-    public class ResultImageLoaded implements ResultListener{
+    public class ResultImageLoaded implements ResultListener {
 
         // implement of interface of ResultListener and wrought how it change main activity
 

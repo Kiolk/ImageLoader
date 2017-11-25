@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name">ImageLoader</string>
     <string name="BUTTON">Button</string>
+    <string name="SHOW_VIEW">Show view</string>
 </resources>

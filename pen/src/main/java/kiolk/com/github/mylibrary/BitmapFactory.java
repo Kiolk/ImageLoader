@@ -21,6 +21,8 @@ public class BitmapFactory {
     public static ImageResult creteBitmapFromUrl(ImageResult result) {
 
         String url = result.getRequest().getmUrl();
+        int reqHeight = result.getRequest().getHeight();
+        int reqWidth = result.getRequest().getWidth();
 
         try {
 
@@ -42,7 +44,7 @@ public class BitmapFactory {
 
             //TODO set possibility use size of view for bitmap
 
-            options.inSampleSize = BitmapFactory.calculateInSimpleSize(options, 100, 100);
+            options.inSampleSize = BitmapFactory.calculateInSimpleSize(options, reqHeight, reqWidth);
             Bitmap bmp = android.graphics.BitmapFactory.decodeByteArray(bytes, 0, bytes.length, options);
             int size = bmp.getByteCount();
             Log.d(LOG, "Size of file: " + size);

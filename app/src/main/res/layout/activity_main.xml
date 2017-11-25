@@ -1,32 +1,63 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:layout_gravity="center"
+    android:orientation="vertical"
     tools:context="kiolk.com.github.imageloader.MainActivity">
 
-    <Button
-        android:id="@+id/button"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/BUTTON"/>
+        android:orientation="horizontal">
 
-    <ImageView
+        <Button
+            android:id="@+id/button"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_weight="1"
+            android:text="@string/BUTTON" />
+
+        <Button
+            android:id="@+id/button2"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_weight="1"
+            android:text="@string/SHOW_VIEW" />
+    </LinearLayout>
+
+
+<ImageView
         android:id="@+id/picture_image_view"
-        android:layout_width="200dp"
-        android:layout_height="200dp"
-        android:layout_centerVertical="true"
-        android:layout_centerHorizontal="true"
-        android:scaleType="centerCrop"/>
+        android:layout_width="10dp"
+        android:layout_height="10dp"
+        android:layout_gravity="center"
+        android:scaleType="center" />
 
     <ImageView
-        android:layout_alignParentBottom="true"
         android:id="@+id/picture2_image_view"
-        android:layout_width="200dp"
-        android:layout_height="200dp"
-        android:layout_centerVertical="true"
-        android:layout_centerHorizontal="true"
-        android:scaleType="centerCrop"/>
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:layout_gravity="center"
+        android:scaleType="center" />
 
-</RelativeLayout>
+    <ImageView
+        android:id="@+id/picture3_image_view"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_gravity="center"
+        android:scaleType="center" />
+
+    <ImageView
+        android:id="@+id/picture4_image_view"
+        android:layout_width="300dp"
+        android:layout_height="300dp"
+        android:layout_gravity="center"
+        android:scaleType="center" />
+
+
+</LinearLayout>
