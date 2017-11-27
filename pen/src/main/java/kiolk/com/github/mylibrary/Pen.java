@@ -6,6 +6,7 @@ import android.util.LruCache;
 import android.view.ViewTreeObserver;
 import android.widget.ImageView;
 
+import java.lang.ref.WeakReference;
 import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -19,10 +20,16 @@ import static kiolk.com.github.mylibrary.Utils.LOG;
 
 public class Pen {
 
+    public static final int WITHOUT_CACHE = 0;
+    public static final int MEMORY_CACHE = 1;
+    public static final int INNER_FILE_CACHE = 2;
     BlockingDeque<ImageRequest> queue;
     ExecutorService executor;
     static LruCache<String, Bitmap> bitmapLruCache;
     Object lock;
+    boolean isMemoryCache = true;
+    Builder builder;
+    int typeOfMemoryCache;
 
     private static Pen instance = null;
 
@@ -30,6 +37,8 @@ public class Pen {
         queue = new LinkedBlockingDeque<>();
         executor = Executors.newFixedThreadPool(3);
         lock = new Object();
+        builder = new Builder();
+        typeOfMemoryCache = WITHOUT_CACHE;
 
         //initialization of LruCache
         final int maxMemory = (int) (Runtime.getRuntime().maxMemory() / 1024);
@@ -41,6 +50,21 @@ public class Pen {
             protected int sizeOf(String key, Bitmap value) {
                 return value.getByteCount() / 1024;
             }
+
+
+            //implement possibility save file from memory cache to DiskCache
+           /* @Override
+            protected void entryRemoved(boolean evicted, String key, Bitmap oldValue, Bitmap newValue) {
+
+                synchronized (DiskCache.lock){
+                    Bitmap bmpBeforeRemove = bitmapLruCache.get(key);
+                    String name = Uri.parse(key).getLastPathSegment();
+                    Context context = DiskCache.context;
+                    DiskCache.saveBitmapInDiskCache(bmpBeforeRemove, name, context);
+                    Log.d(LOG, "Save " + name + " to DiskCache");
+                }
+                super.entryRemoved(evicted, key, oldValue, newValue);
+            }*/
         };
     }
 
@@ -53,6 +77,40 @@ public class Pen {
 
     protected LruCache<String, Bitmap> getBitmapLruCache() {
         return bitmapLruCache;
+    }
+
+    public class Builder{
+
+        public Builder() {
+        }
+
+        private String url;
+
+        private void setUrl(String url) {
+            this.url = url;
+        }
+
+        public Builder getBitmapFromUrl(String url){
+            setUrl(url);
+            return builder;
+        }
+
+        public Builder setTypeOfCache(int typeOfCache){
+            if(typeOfCache >= WITHOUT_CACHE && typeOfCache <= INNER_FILE_CACHE){
+                typeOfMemoryCache = typeOfCache;
+            }
+            return builder;
+        }
+
+        public void inputTo(ImageView view){
+            WeakReference<ImageView> weakReference = new WeakReference<ImageView>(view);
+            ImageRequest imageRequest = new ImageRequest(builder.url, weakReference);
+            Pen.getInstance().enqueue(imageRequest);
+        }
+    }
+
+    public Builder getImageFromUrl(String url){
+        return builder.getBitmapFromUrl(url);
     }
 
     public void enqueue(ImageRequest imageRequest) {

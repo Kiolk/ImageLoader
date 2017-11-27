@@ -1,1 +1,1 @@
-include ':app', ':pen'
+include ':app', ':pen', ':diskcache'

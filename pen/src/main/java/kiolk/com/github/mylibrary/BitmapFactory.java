@@ -1,7 +1,10 @@
 package kiolk.com.github.mylibrary;
 
+import android.content.Context;
 import android.graphics.Bitmap;
+import android.net.Uri;
 import android.util.Log;
+import android.widget.Toast;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -24,12 +27,29 @@ public class BitmapFactory {
         int reqHeight = result.getRequest().getHeight();
         int reqWidth = result.getRequest().getWidth();
 
-        //check exist bitmap in LruCache and set on result
-        synchronized (Pen.getInstance().lock) {
-            if (Pen.getBitmapFromLruCache(url) != null) {
-                result.setBitmap(Pen.getBitmapFromLruCache(url));
-                Log.d(LOG, "Set bitmap from LruCache");
-                return result;
+        if (Pen.getInstance().typeOfMemoryCache == Pen.MEMORY_CACHE) {
+            //check exist bitmap in LruCache and set on result
+            synchronized (Pen.getInstance().lock) {
+                if (Pen.getBitmapFromLruCache(url) != null) {
+                    result.setBitmap(Pen.getBitmapFromLruCache(url));
+                    Log.d(LOG, "Set bitmap from LruCache");
+                    return result;
+                }
+            }
+        }
+        if (Pen.getInstance().typeOfMemoryCache == Pen.INNER_FILE_CACHE){
+            //if file not present im memory cache find this file in DiskCache
+            synchronized (DiskCache.lock) {
+                String[] array = result.getRequest().getmUrl().split("/");
+                int size = array.length;
+                String name = array[size-1];
+                Context context = result.getRequest().getmTarget().get().getContext();
+                Bitmap bitmap = DiskCache.loadBitmapFromDiskCache(context, name);
+                if (bitmap != null) {
+                    result.setBitmap(bitmap);
+                    Log.d(LOG, "Set bitmap from DiskCache");
+                    return result;
+                }
             }
         }
 
@@ -62,8 +82,31 @@ public class BitmapFactory {
             result.setBitmap(bmp);
 
             //add file to LruCache
-            synchronized (Pen.getInstance().lock) {
-                Pen.addBitmapForLruCache(result.getRequest().getmUrl(), result.getBitmap());
+            if (Pen.getInstance().typeOfMemoryCache == Pen.MEMORY_CACHE) {
+                synchronized (Pen.getInstance().lock) {
+                    Pen.addBitmapForLruCache(result.getRequest().getmUrl(), result.getBitmap());
+                }
+            }
+            if (Pen.getInstance().typeOfMemoryCache == Pen.INNER_FILE_CACHE) {
+                //set context for possibility use DiskCache
+                synchronized (DiskCache.lock) {
+//                if (DiskCache.context == null) {
+//                    Context context = result.getRequest().getmTarget().get().getContext();
+//                    DiskCache.setContext(context);
+//                    Log.d(LOG, "Set context ");
+//                }
+                    String[] array = result.getRequest().getmUrl().split("/");
+                    int sizeOfArray = array.length;
+                    String name = array[sizeOfArray-1];
+                    Bitmap bitmap = result.getBitmap();
+                    Context context = result.getRequest().getmTarget().get().getContext();
+                    boolean resultOfSave = false;
+                    resultOfSave = DiskCache.saveBitmapInDiskCache(bitmap, name, context);
+                    if (resultOfSave) {
+                        Log.d(LOG, "Save " + name + " to DiskCache");
+//                    Toast.makeText(context, "Seccesfull save data in internal storage by name : " + name, Toast.LENGTH_SHORT).show();
+                    }
+                }
             }
             return result;
 
