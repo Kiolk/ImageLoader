@@ -10,53 +10,50 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
-/**
- * Created by yauhen on 26.11.17.
- */
+import static kiolk.com.github.mylibrary.utils.ConstantsUtil.*;
 
-public class DiskCache {
+class DiskCache {
 
-    static Object lock = new Object();
-    static Context context;
+    static final Object mLock = new Object();
 
-    public static boolean saveBitmapInDiskCache(Bitmap bitmap, String name, Context context) {
+    static boolean saveBitmapInDiskCache(Bitmap pBitmap, String pName, Context pContext) {
         FileOutputStream fileOutputStream = null;
-        File directory = context.getFilesDir();
-        File myPath = new File(directory, name + ".jpg");
-        boolean result = false;
+        File directory = pContext.getFilesDir();
+        File myPath = new File(directory, pName + STORAGE_FILE_FORMAT);
+        boolean isSaved = false;
 
         try {
             fileOutputStream = new FileOutputStream(myPath);
-            bitmap.compress(Bitmap.CompressFormat.PNG, 100, fileOutputStream);
-            result = true;
+            pBitmap.compress(Bitmap.CompressFormat.PNG, QUALITY_OF_COMPRESSION_BMP, fileOutputStream);
+            isSaved = true;
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
             try {
-                fileOutputStream.close();
-                return result;
+                if (fileOutputStream != null) {
+                    fileOutputStream.close();
+                }
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
-        return result;
+
+        return isSaved;
     }
 
-    public static Bitmap loadBitmapFromDiskCache(Context context, String name) {
-        File directory = context.getFilesDir();
-        File myPath = new File(directory, name + ".jpg");
+    static Bitmap loadBitmapFromDiskCache(Context pContext, String pName) {
+        File directory = pContext.getFilesDir();
+        File myPath = new File(directory, pName + STORAGE_FILE_FORMAT);
         Bitmap bitmap = null;
+
         try {
             bitmap = BitmapFactory.decodeStream(new FileInputStream(myPath));
-            return bitmap;
+
+//            return bitmap;
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
+
         return bitmap;
     }
-
-    static void setContext(Context pContext){
-        context = pContext;
-    }
-
 }

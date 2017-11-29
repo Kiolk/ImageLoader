@@ -2,41 +2,37 @@ package kiolk.com.github.mylibrary;
 
 import android.graphics.Bitmap;
 
-/**
- * Created by yauhen on 24.11.17.
- */
-
 public class ImageResult {
 
-    private ImageRequest request;
-    private Bitmap bitmap;
-    private Exception exception;
+    private ImageRequest mRequest;
+    private Bitmap mBitmap;
+    private Exception mException;
 
     public ImageResult(ImageRequest request) {
-        this.request = request;
+        this.mRequest = request;
     }
 
-    public ImageRequest getRequest() {
-        return request;
+    public ImageRequest getmRequest() {
+        return mRequest;
     }
 
-    public void setRequest(ImageRequest request) {
-        this.request = request;
+    public void setmRequest(ImageRequest mRequest) {
+        this.mRequest = mRequest;
     }
 
-    public Bitmap getBitmap() {
-        return bitmap;
+    public Bitmap getmBitmap() {
+        return mBitmap;
     }
 
-    public void setBitmap(Bitmap bitmap) {
-        this.bitmap = bitmap;
+    public void setmBitmap(Bitmap mBitmap) {
+        this.mBitmap = mBitmap;
     }
 
-    public Exception getException() {
-        return exception;
+    public Exception getmException() {
+        return mException;
     }
 
-    public void setException(Exception exception) {
-        this.exception = exception;
+    public void setmException(Exception mException) {
+        this.mException = mException;
     }
 }

@@ -4,32 +4,29 @@ import android.os.AsyncTask;
 import android.widget.ImageView;
 import android.widget.Toast;
 
-/**
- * Created by yauhen on 24.11.17.
- */
-
 public class ImageLoadingAsyncTask extends AsyncTask<ImageRequest, Void, ImageResult> {
-    @Override
-    protected ImageResult doInBackground(ImageRequest... imageRequests) {
 
-        ImageRequest request = imageRequests[0];
+    @Override
+    protected ImageResult doInBackground(ImageRequest... pImageRequests) {
+        ImageRequest request = pImageRequests[0];
         ImageResult result = new ImageResult(request);
-        return BitmapFactory.creteBitmapFromUrl(result);
+
+        return ImageFactory.creteBitmapFromUrl(result);
     }
 
     @Override
-    protected void onPostExecute(ImageResult imageResult) {
-        super.onPostExecute(imageResult);
-        if (imageResult.getBitmap() != null){
-            ImageView imageView = imageResult.getRequest().getmTarget().get();
-            //maybe work as control flipping images
-            if(imageView.getTag().equals(imageResult.getRequest().getmUrl())) {
-                imageView.setImageBitmap(imageResult.getBitmap());
+    protected void onPostExecute(ImageResult pImageResult) {
+        super.onPostExecute(pImageResult);
+
+        if (pImageResult.getmBitmap() != null){
+            ImageView imageView = pImageResult.getmRequest().getmTarget().get();
+            if(imageView.getTag().equals(pImageResult.getmRequest().getmUrl())) {
+                imageView.setImageBitmap(pImageResult.getmBitmap());
             }
         }else{
             //Not very good idea show toast from AsyncTask only for example
-            Toast.makeText(imageResult.getRequest().getmTarget().get().getContext(),
-                    imageResult.getException().getMessage(), Toast.LENGTH_LONG).show();
+            Toast.makeText(pImageResult.getmRequest().getmTarget().get().getContext(),
+                    pImageResult.getmException().getMessage(), Toast.LENGTH_LONG).show();
         }
     }
 }

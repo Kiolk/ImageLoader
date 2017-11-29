@@ -1,5 +1,6 @@
 package kiolk.com.github.mylibrary;
 
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.util.Log;
 import android.util.LruCache;
@@ -12,43 +13,51 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingDeque;
 
-import static kiolk.com.github.mylibrary.Utils.LOG;
+import kiolk.com.github.mylibrary.utils.ConstantsUtil;
+import kiolk.com.github.mylibrary.utils.ContextHolderUtil;
+import kiolk.com.github.mylibrary.utils.LogUtil;
 
-/**
- * Created by yauhen on 24.11.17.
- */
+import static kiolk.com.github.mylibrary.utils.Utils.LOG;
 
 public class Pen {
 
     public static final int WITHOUT_CACHE = 0;
     public static final int MEMORY_CACHE = 1;
     public static final int INNER_FILE_CACHE = 2;
-    BlockingDeque<ImageRequest> queue;
-    ExecutorService executor;
-    static LruCache<String, Bitmap> bitmapLruCache;
-    Object lock;
-    boolean isMemoryCache = true;
-    Builder builder;
-    int typeOfMemoryCache;
+
+    private BlockingDeque<ImageRequest> mQueue;
+    private ExecutorService executor;
+    private LruCache<String, Bitmap> mBitmapLruCache;
+    int mTypeOfMemoryCache;
+    Builder mBuilder;
+    final Object mLock;
 
     private static Pen instance = null;
 
-    protected Pen() {
-        queue = new LinkedBlockingDeque<>();
+    private Pen() {
+        mQueue = new LinkedBlockingDeque<>();
         executor = Executors.newFixedThreadPool(3);
-        lock = new Object();
-        builder = new Builder();
-        typeOfMemoryCache = WITHOUT_CACHE;
+        mLock = new Object();
+        mBuilder = new Builder();
+        mTypeOfMemoryCache = WITHOUT_CACHE;
 
-        //initialization of LruCache
-        final int maxMemory = (int) (Runtime.getRuntime().maxMemory() / 1024);
-        final int cacheSize = maxMemory / 4;
+        initialisationLruCache();
+    }
+
+    private void initialisationLruCache() {
+        final int maxMemory = (int) (Runtime.getRuntime().maxMemory() / ConstantsUtil.KILOBYTE_SIZE);
+        final int cacheSize = maxMemory / ConstantsUtil.PART_OF_MEMORY_CACHE;
+
         Log.d(LOG, "maxMemory = " + maxMemory + ". MaxMemory from Runtime: "
                 + Runtime.getRuntime().maxMemory() + ". CacheSize: " + cacheSize);
-        bitmapLruCache = new LruCache<String, Bitmap>(cacheSize) {
+        LogUtil.msg("maxMemory = " + maxMemory + ". MaxMemory from Runtime: "
+                + Runtime.getRuntime().maxMemory() + ". CacheSize: " + cacheSize);
+
+        mBitmapLruCache = new LruCache<String, Bitmap>(cacheSize) {
+
             @Override
             protected int sizeOf(String key, Bitmap value) {
-                return value.getByteCount() / 1024;
+                return value.getByteCount() / ConstantsUtil.KILOBYTE_SIZE;
             }
 
 
@@ -56,8 +65,8 @@ public class Pen {
            /* @Override
             protected void entryRemoved(boolean evicted, String key, Bitmap oldValue, Bitmap newValue) {
 
-                synchronized (DiskCache.lock){
-                    Bitmap bmpBeforeRemove = bitmapLruCache.get(key);
+                synchronized (DiskCache.mLock){
+                    Bitmap bmpBeforeRemove = mBitmapLruCache.get(key);
                     String name = Uri.parse(key).getLastPathSegment();
                     Context context = DiskCache.context;
                     DiskCache.saveBitmapInDiskCache(bmpBeforeRemove, name, context);
@@ -72,63 +81,75 @@ public class Pen {
         if (instance == null) {
             instance = new Pen();
         }
+
         return instance;
     }
 
-    protected LruCache<String, Bitmap> getBitmapLruCache() {
-        return bitmapLruCache;
+    public int getmTypeOfMemoryCache() {
+        return mTypeOfMemoryCache;
     }
+//
+//    public void setmTypeOfMemoryCache(int mTypeOfMemoryCache) {
+//        this.mTypeOfMemoryCache = mTypeOfMemoryCache;
+//    }
 
-    public class Builder{
+    public class Builder {
 
-        public Builder() {
+        private Builder() {
         }
 
-        private String url;
+        private String mUrl;
 
-        private void setUrl(String url) {
-            this.url = url;
+        private void setmUrl(String mUrl) {
+            this.mUrl = mUrl;
         }
 
-        public Builder getBitmapFromUrl(String url){
-            setUrl(url);
-            return builder;
+        private Builder getBitmapFromUrl(String url) {
+            setmUrl(url);
+
+            return mBuilder;
         }
 
-        public Builder setTypeOfCache(int typeOfCache){
-            if(typeOfCache >= WITHOUT_CACHE && typeOfCache <= INNER_FILE_CACHE){
-                typeOfMemoryCache = typeOfCache;
+        public Builder setTypeOfCache(int pTypeOfCache) {
+            if (pTypeOfCache >= WITHOUT_CACHE && pTypeOfCache <= INNER_FILE_CACHE) {
+                mTypeOfMemoryCache = pTypeOfCache;
             }
-            return builder;
+
+            return mBuilder;
         }
 
-        public void inputTo(ImageView view){
-            WeakReference<ImageView> weakReference = new WeakReference<ImageView>(view);
-            ImageRequest imageRequest = new ImageRequest(builder.url, weakReference);
+        public void inputTo(ImageView pView) {
+            WeakReference<ImageView> weakReference = new WeakReference<ImageView>(pView);
+            ImageRequest imageRequest = new ImageRequest(mBuilder.mUrl, weakReference);
+            Context context = pView.getContext();
+
             Pen.getInstance().enqueue(imageRequest);
+            ContextHolderUtil.getInstance().setContext(context);
         }
     }
 
-    public Builder getImageFromUrl(String url){
-        return builder.getBitmapFromUrl(url);
+    public Builder getImageFromUrl(String url) {
+        return mBuilder.getBitmapFromUrl(url);
     }
 
-    public void enqueue(ImageRequest imageRequest) {
+    private void enqueue(ImageRequest imageRequest) {
 
         ImageView imageView = imageRequest.getmTarget().get();
 
         if (imageView == null) {
+            LogUtil.msg("Target image view not exist");
             Log.d(LOG, "Target image view not exist");
-            return;
 
+            return;
         }
 
         if (imageHasSize(imageRequest)) {
             imageView.setTag(imageRequest.getmUrl());
-            queue.addFirst(imageRequest);
+            mQueue.addFirst(imageRequest);
             Log.d(LOG, "Image view" + imageRequest.getmTarget().get().toString() + " start setup");
+            LogUtil.msg("Image view" + imageRequest.getmTarget().get().toString() + " start setup");
             try {
-                new ImageLoadingAsyncTask().execute(queue.takeFirst());
+                new ImageLoadingAsyncTask().execute(mQueue.takeFirst());
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -138,59 +159,73 @@ public class Pen {
     }
 
     private boolean imageHasSize(ImageRequest request) {
-        if (request.getHeight() > 0 && request.getWidth() > 0) {
+
+        if (request.getmHeight() > 0 && request.getmWidth() > 0) {
             return true;
         }
+
         ImageView view = request.getmTarget().get();
+
         if (view != null && view.getHeight() > 0 && view.getWidth() > 0) {
             int viewHeight = view.getHeight();
             int viewWidth = view.getWidth();
-            request.setHeight(viewHeight);
-            request.setWidth(viewWidth);
+
+            request.setmHeight(viewHeight);
+            request.setmWidth(viewWidth);
+
             return true;
         }
+
         return false;
     }
 
-    private void waiterImageViewShow(final ImageRequest request) {
-        Log.d(LOG, "Image view" + request.getmTarget().get().toString() + " wait for draw");
-        ImageView viewWaiterDraw = request.getmTarget().get();
-        viewWaiterDraw.getViewTreeObserver().addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
+    private void waiterImageViewShow(final ImageRequest pRequest) {
+        LogUtil.msg("Image view" + pRequest.getmTarget().get().toString() + " wait for draw");
+        Log.d(LOG, "Image view" + pRequest.getmTarget().get().toString() + " wait for draw");
+
+        ImageView viewWaitDraw = pRequest.getmTarget().get();
+
+        viewWaitDraw.getViewTreeObserver().addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
+
             @Override
             public boolean onPreDraw() {
-                ImageView v = request.getmTarget().get();
+                ImageView v = pRequest.getmTarget().get();
+
                 if (v == null) {
                     return true;
                 }
 
-                //???? Why show before if?
 //                v.getViewTreeObserver().removeOnPreDrawListener(this);
-
                 if (v.getWidth() > 0 && v.getHeight() > 0) {
-                    Log.d(LOG, "Image view" + request.getmTarget().get().toString() + " start draw");
-                    request.setWidth(v.getWidth());
-                    request.setHeight(v.getHeight());
-                    enqueue(request);
+                    Log.d(LOG, "Image view" + pRequest.getmTarget().get().toString() + " start draw");
+                    LogUtil.msg("Image view" + pRequest.getmTarget().get().toString() + " start draw");
+
+                    pRequest.setmWidth(v.getWidth());
+                    pRequest.setmHeight(v.getHeight());
+                    enqueue(pRequest);
                     //correct variant for remove OnPreDrawListener
                     v.getViewTreeObserver().removeOnPreDrawListener(this);
-
                 }
+
                 return true;
             }
         });
     }
 
     //add bitmap for LruCache
-    protected static void addBitmapForLruCache(String key, Bitmap bitmap) {
+    void addBitmapForLruCache(String key, Bitmap bitmap) {
         if (getBitmapFromLruCache(key) == null) {
-            bitmapLruCache.put(key, bitmap);
+            mBitmapLruCache.put(key, bitmap);
             Log.d(LOG, "Add bitmap by key: " + key);
+            LogUtil.msg("Add bitmap by key: " + key);
         }
     }
 
     //get bitmap from LruCache
-    protected static Bitmap getBitmapFromLruCache(String key){
+    Bitmap getBitmapFromLruCache(String key) {
         Log.d(LOG, "Try bitmap by key " + key);
-        return bitmapLruCache.get(key);
+        LogUtil.msg("Try bitmap by key " + key);
+
+        return mBitmapLruCache.get(key);
     }
 }

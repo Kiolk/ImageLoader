@@ -62,7 +62,7 @@ public class ImageDownloadAsyncTask extends AsyncTask<String, Void, Bitmap> {
             int size = bmp.getByteCount();
             Log.d(LOG, "Size of file: " + size);
             Log.d(LOG, "Height: " + options.outHeight + ". Width: " + options.outWidth + ". bmp: " + options.inBitmap);
-//            bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length, null);
+//            bitmap = ImageFactory.decodeByteArray(bytes, 0, bytes.length, null);
             return bmp;
         } catch (IOException e) {
             e.printStackTrace();

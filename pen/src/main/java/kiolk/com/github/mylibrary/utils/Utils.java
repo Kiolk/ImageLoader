@@ -1,4 +1,4 @@
-package kiolk.com.github.mylibrary;
+package kiolk.com.github.mylibrary.utils;
 
 /**
  * Created by yauhen on 24.11.17.

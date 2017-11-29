@@ -15,8 +15,6 @@ import java.lang.ref.WeakReference;
 import kiolk.com.github.mylibrary.ImageRequest;
 import kiolk.com.github.mylibrary.Pen;
 
-import static kiolk.com.github.mylibrary.Utils.LOG;
-
 public class MainActivity extends AppCompatActivity {
 
     public static final String LOG = "MyLogs";
@@ -60,7 +58,7 @@ public class MainActivity extends AppCompatActivity {
 //                        pen.enqueue(request2);
 
                         Pen.getInstance().getImageFromUrl(URL1).setTypeOfCache(Pen.INNER_FILE_CACHE).inputTo(mPhoto2);
-
+                     //   Pen.getInstance().getImageFromUrl(URL1).
 //                        ImageRequest request3 = new ImageRequest(URL2, new WeakReference<ImageView>(mPhoto3));
 //                        pen.enqueue(request3);
                         Pen.getInstance().getImageFromUrl(URL2).setTypeOfCache(Pen.MEMORY_CACHE).inputTo(mPhoto3);
@@ -83,8 +81,8 @@ public class MainActivity extends AppCompatActivity {
         mButton.setOnClickListener(click);
         getmButtonShowView.setOnClickListener(click);
 
-//        BitmapFactory bitmapFactory = new BitmapFactory();
-//        Bitmap bmp = BitmapFactory.decodeResource(getResources(), R.drawable.patch);
+//        ImageFactory bitmapFactory = new ImageFactory();
+//        Bitmap bmp = ImageFactory.decodeResource(getResources(), R.drawable.patch);
 //        int size = bmp.getByteCount();
 //        Log.d(LOG, "Size of file: " + size);
 //        mPhoto.setImageBitmap(bmp);
