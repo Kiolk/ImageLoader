@@ -52,20 +52,25 @@ public class MainActivity extends AppCompatActivity {
                         ImageRequest request = new ImageRequest(URL, new WeakReference<ImageView>(mPhoto));
 //                        Pen pen = Pen.getInstance();
 //                        pen.enqueue(request);
-                        Pen.getInstance().getImageFromUrl(URL).setTypeOfCache(Pen.WITHOUT_CACHE).inputTo(mPhoto);
+                        Pen.getInstance().setLoaderSettings()
+                                .setSavingStrategy(Pen.SAVE_SCALING_IMAGE_STRATEGY)
+                                .setTypeOfCache(Pen.INNER_FILE_CACHE)
+                                .setSizeInnerFileCache(10L);
+
+                        Pen.getInstance().getImageFromUrl(URL).inputTo(mPhoto);
 
 //                        ImageRequest request2 = new ImageRequest(URL1, new WeakReference<ImageView>(mPhoto2));
 //                        pen.enqueue(request2);
 
-                        Pen.getInstance().getImageFromUrl(URL1).setTypeOfCache(Pen.INNER_FILE_CACHE).inputTo(mPhoto2);
+                        Pen.getInstance().getImageFromUrl(URL).inputTo(mPhoto2);
                      //   Pen.getInstance().getImageFromUrl(URL1).
 //                        ImageRequest request3 = new ImageRequest(URL2, new WeakReference<ImageView>(mPhoto3));
 //                        pen.enqueue(request3);
-                        Pen.getInstance().getImageFromUrl(URL2).setTypeOfCache(Pen.MEMORY_CACHE).inputTo(mPhoto3);
+                        Pen.getInstance().getImageFromUrl(URL).inputTo(mPhoto3);
 
 //                        ImageRequest request4 = new ImageRequest(URL3, new WeakReference<ImageView>(mPhoto4));
 //                        pen.enqueue(request4);
-                        Pen.getInstance().getImageFromUrl(URL3).setTypeOfCache(Pen.INNER_FILE_CACHE).inputTo(mPhoto4);
+                        Pen.getInstance().getImageFromUrl(URL).inputTo(mPhoto4);
                         break;
                     case R.id.button2:
                         Log.d(LOG, "Press button show view");

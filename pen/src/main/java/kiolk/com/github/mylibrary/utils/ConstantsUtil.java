@@ -16,5 +16,6 @@ public class ConstantsUtil {
     public static final int QUALITY_OF_COMPRESSION_BMP = 100;
     public static final String SPLITTING_BY_SLASH = "/";
     public static final String EMPTY_STRING = "";
+    public final static String LOG = "MyLogs";
 
 }

@@ -20,14 +20,19 @@ import static kiolk.com.github.mylibrary.utils.ConstantsUtil.*;
 
 class DiskCache {
 
-    private static final long MAXIMAL_CACHE_SIZE = 10 * 1024 * 1024;
+    private static final long DEFAULT_FILE_CACHE_SIZE = 10 * 1024 * 1024;
+    private static final String IMAGE_CACHE_DESTINATION = "ImageCache";
+
     private static DiskCache mDiskCache;
-    static final Object mLock = new Object();
-    private static File mCacheDir;
+    private long mAvailableCacheSize;
+    final Object mLock;
+    private File mCacheDir;
     //    private Context mContext;
     private long mCurrentSizeCache;
 
     private DiskCache() {
+        mLock = new Object();
+        mAvailableCacheSize = DEFAULT_FILE_CACHE_SIZE;
     }
 
     static DiskCache getInstance() {
@@ -42,6 +47,11 @@ class DiskCache {
 
     void setContext(Context pContext) {
 //        this.mContext = pContext;
+    }
+
+    void setUserCacheSize(long userCacheSize) {
+        this.mAvailableCacheSize = userCacheSize * KILOBYTE_SIZE * KILOBYTE_SIZE;
+        LogUtil.msg("User size of cache = " + this.mAvailableCacheSize + " Mb");
     }
 
     boolean saveBitmapInDiskCache(Bitmap pBitmap, String pName, Context pContext) {
@@ -77,6 +87,7 @@ class DiskCache {
 
      Bitmap loadBitmapFromDiskCache(Context pContext, String pName) {
         File myPath = new File(mCacheDir, pName + STORAGE_FILE_FORMAT);
+        myPath.setLastModified(System.currentTimeMillis());
         Bitmap bitmap = null;
 
         try {
@@ -89,17 +100,6 @@ class DiskCache {
 
         return bitmap;
     }
-
-/*    private static File checkDestinationFolder(Context pContext) {
-        File cachePath = pContext.getCacheDir();
-        File imageFolder = new File(cachePath, "ImageCache");
-        if (!imageFolder.exists()) {
-            imageFolder.mkdir();
-            mCacheDir = imageFolder;
-            LogUtil.msg("Folder ImageCache created");
-        }
-        return imageFolder;
-    }*/
 
     private void sizeCacheFolder() {
         File[] listFiles = mCacheDir.listFiles();
@@ -116,7 +116,7 @@ class DiskCache {
 
     private void keepSizeCacheFolder() {
         sizeCacheFolder();
-        if (mCurrentSizeCache > MAXIMAL_CACHE_SIZE) {
+        if (mCurrentSizeCache > mAvailableCacheSize) {
             File[] listFiles = mCacheDir.listFiles();
             ArrayList<File> arrayFiles = new ArrayList<>();
             arrayFiles.addAll(Arrays.asList(listFiles));
@@ -134,9 +134,11 @@ class DiskCache {
 
             Collections.sort(arrayFiles, comparator);
             int i = 0;
+
             do {
                 LogUtil.msg("File remove: " + arrayFiles.get(i).getName());
                 boolean deleteResult = arrayFiles.get(i).delete();
+
                 if (deleteResult) {
                     arrayFiles.remove(i);
                     ++i;
@@ -144,16 +146,18 @@ class DiskCache {
                 } else {
                     break;
                 }
-            } while (mCurrentSizeCache > MAXIMAL_CACHE_SIZE);
+
+            } while (mCurrentSizeCache > mAvailableCacheSize);
         }
     }
 
     private void getCacheDir(Context pContext) {
         File cachePath = pContext.getCacheDir();
-        File imageFolder = new File(cachePath, "ImageCache");
+        File imageFolder = new File(cachePath, IMAGE_CACHE_DESTINATION);
 
         if (!imageFolder.exists()) {
             boolean isDirCreated = imageFolder.mkdir();
+
             if(isDirCreated) {
                 mCacheDir = imageFolder;
                 LogUtil.msg("Folder ImageCache created");
@@ -161,6 +165,7 @@ class DiskCache {
                 mCacheDir =cachePath;
                 LogUtil.msg("Continue write in direct cache directory;");
             }
+
         } else {
             mCacheDir = imageFolder;
         }

@@ -18,35 +18,39 @@ import kiolk.com.github.mylibrary.utils.ContextHolderUtil;
 import kiolk.com.github.mylibrary.utils.LogUtil;
 import kiolk.com.github.mylibrary.utils.MD5Util;
 
-import static kiolk.com.github.mylibrary.utils.Utils.LOG;
+import static kiolk.com.github.mylibrary.utils.ConstantsUtil.LOG;
 
 public class Pen {
 
     public static final int WITHOUT_CACHE = 0;
     public static final int MEMORY_CACHE = 1;
     public static final int INNER_FILE_CACHE = 2;
-
-    private BlockingDeque<ImageRequest> mQueue;
-    private ExecutorService executor;
-    private LruCache<String, Bitmap> mBitmapLruCache;
-    private Context mContext;
-
-    int mTypeOfMemoryCache;
-    Builder mBuilder;
-    final Object mLock;
+    public static final int SAVE_SCALING_IMAGE_STRATEGY = 0;
+    public static final int SAVE_FULL_IMAGE_STRATEGY = 1;
 
     private static Pen instance = null;
 
+    private BlockingDeque<ImageRequest> mQueue;
+    private ExecutorService mExecutor;
+    private LruCache<String, Bitmap> mBitmapLruCache;
+    //    private Context mContext;
+    private int mTypeOfMemoryCache;
+    private int mStrategySaveImage;
+    private Builder mBuilder;
+
+    final Object mLock;
+
+
     private Pen() {
         mQueue = new LinkedBlockingDeque<>();
-        executor = Executors.newFixedThreadPool(3);
+        mExecutor = Executors.newFixedThreadPool(3);
         mLock = new Object();
         mBuilder = new Builder();
         mTypeOfMemoryCache = WITHOUT_CACHE;
+        mStrategySaveImage = SAVE_SCALING_IMAGE_STRATEGY;
 
         initialisationLruCache();
         DiskCache.getInstance();
-
         LogUtil.msg("Create object of Pen");
     }
 
@@ -65,7 +69,6 @@ public class Pen {
             protected int sizeOf(String key, Bitmap value) {
                 return value.getByteCount() / ConstantsUtil.KILOBYTE_SIZE;
             }
-
 
             //implement possibility save file from memory cache to DiskCache
            /* @Override
@@ -91,16 +94,21 @@ public class Pen {
         return instance;
     }
 
-    public void setContext(Context pContext) {
+    /*public void setContext(Context pContext) {
         this.mContext = pContext;
         DiskCache.getInstance().setContext(pContext);
         LogUtil.msg("Setup context in Pen and DiskCache");
-    }
+    }*/
 
-    public int getmTypeOfMemoryCache() {
+    int getTypeOfMemoryCache() {
         return mTypeOfMemoryCache;
     }
-//
+
+    int getStrategySaveImage() {
+        return mStrategySaveImage;
+    }
+
+    //
 //    public void setmTypeOfMemoryCache(int mTypeOfMemoryCache) {
 //        this.mTypeOfMemoryCache = mTypeOfMemoryCache;
 //    }
@@ -112,12 +120,12 @@ public class Pen {
 
         private String mUrl;
 
-        private void setmUrl(String mUrl) {
+        private void setUrl(String mUrl) {
             this.mUrl = mUrl;
         }
 
         private Builder getBitmapFromUrl(String url) {
-            setmUrl(url);
+            setUrl(url);
 
             return mBuilder;
         }
@@ -130,6 +138,14 @@ public class Pen {
             return mBuilder;
         }
 
+        public Builder setSavingStrategy(int pTypeStrategy) {
+            if (pTypeStrategy >= SAVE_SCALING_IMAGE_STRATEGY && pTypeStrategy <= SAVE_FULL_IMAGE_STRATEGY) {
+                mStrategySaveImage = pTypeStrategy;
+            }
+
+            return mBuilder;
+        }
+
         public void inputTo(ImageView pView) {
             WeakReference<ImageView> weakReference = new WeakReference<ImageView>(pView);
             ImageRequest imageRequest = new ImageRequest(mBuilder.mUrl, weakReference);
@@ -137,6 +153,12 @@ public class Pen {
 
             Pen.getInstance().enqueue(imageRequest);
             ContextHolderUtil.getInstance().setContext(context);
+        }
+
+        public Builder setSizeInnerFileCache(Long pSizeMB) {
+            DiskCache.getInstance().setUserCacheSize(pSizeMB);
+
+            return mBuilder;
         }
     }
 
@@ -170,6 +192,10 @@ public class Pen {
         } else {
             waiterImageViewShow(imageRequest);
         }
+    }
+
+    public Builder setLoaderSettings() {
+        return mBuilder;
     }
 
     private boolean imageHasSize(ImageRequest request) {
