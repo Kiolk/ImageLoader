@@ -12,6 +12,7 @@ import java.io.InputStream;
 import java.net.URL;
 
 import kiolk.com.github.mylibrary.utils.LogUtil;
+import kiolk.com.github.mylibrary.utils.MD5Util;
 
 import static kiolk.com.github.mylibrary.utils.ConstantsUtil.*;
 import static kiolk.com.github.mylibrary.utils.Utils.LOG;
@@ -41,7 +42,7 @@ public class ImageFactory {
                 synchronized (DiskCache.mLock) {
                     String name = getName(pResult);
                     Context context = pResult.getmRequest().getmTarget().get().getContext();
-                    Bitmap bitmap = DiskCache.loadBitmapFromDiskCache(context, name);
+                    Bitmap bitmap = DiskCache.getInstance().loadBitmapFromDiskCache(context, name);
 
                     if (bitmap != null) {
                         pResult.setmBitmap(bitmap);
@@ -98,7 +99,7 @@ public class ImageFactory {
                         Bitmap bitmap = pResult.getmBitmap();
                         Context context = pResult.getmRequest().getmTarget().get().getContext();
 
-                        resultOfSave = DiskCache.saveBitmapInDiskCache(bitmap, name, context);
+                        resultOfSave = DiskCache.getInstance().saveBitmapInDiskCache(bitmap, name, context);
 
                         if (resultOfSave) {
                             Log.d(LOG, "Save " + name + " to DiskCache");
@@ -140,10 +141,10 @@ public class ImageFactory {
     }
 
     private static String getName(ImageResult pResult) {
-        String[] arrayFromUrl = pResult.getmRequest().getmUrl().split(SPLITTING_BY_SLASH);
+      /*  String[] arrayFromUrl = pResult.getmRequest().getmUrl().split(SPLITTING_BY_SLASH);
         int size = arrayFromUrl.length;
         String name = arrayFromUrl[size - 1];
-
-        return name;
+*/
+        return MD5Util.getHashString(pResult.getmRequest().getmUrl());
     }
 }

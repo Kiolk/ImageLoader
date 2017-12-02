@@ -16,6 +16,7 @@ import java.util.concurrent.LinkedBlockingDeque;
 import kiolk.com.github.mylibrary.utils.ConstantsUtil;
 import kiolk.com.github.mylibrary.utils.ContextHolderUtil;
 import kiolk.com.github.mylibrary.utils.LogUtil;
+import kiolk.com.github.mylibrary.utils.MD5Util;
 
 import static kiolk.com.github.mylibrary.utils.Utils.LOG;
 
@@ -28,6 +29,8 @@ public class Pen {
     private BlockingDeque<ImageRequest> mQueue;
     private ExecutorService executor;
     private LruCache<String, Bitmap> mBitmapLruCache;
+    private Context mContext;
+
     int mTypeOfMemoryCache;
     Builder mBuilder;
     final Object mLock;
@@ -42,6 +45,9 @@ public class Pen {
         mTypeOfMemoryCache = WITHOUT_CACHE;
 
         initialisationLruCache();
+        DiskCache.getInstance();
+
+        LogUtil.msg("Create object of Pen");
     }
 
     private void initialisationLruCache() {
@@ -83,6 +89,12 @@ public class Pen {
         }
 
         return instance;
+    }
+
+    public void setContext(Context pContext) {
+        this.mContext = pContext;
+        DiskCache.getInstance().setContext(pContext);
+        LogUtil.msg("Setup context in Pen and DiskCache");
     }
 
     public int getmTypeOfMemoryCache() {
@@ -144,7 +156,9 @@ public class Pen {
         }
 
         if (imageHasSize(imageRequest)) {
-            imageView.setTag(imageRequest.getmUrl());
+            String tag = MD5Util.getHashString(imageRequest.getmUrl());
+            imageView.setTag(tag);
+            LogUtil.msg(" get image " + tag + " " + imageRequest.getmUrl());
             mQueue.addFirst(imageRequest);
             Log.d(LOG, "Image view" + imageRequest.getmTarget().get().toString() + " start setup");
             LogUtil.msg("Image view" + imageRequest.getmTarget().get().toString() + " start setup");

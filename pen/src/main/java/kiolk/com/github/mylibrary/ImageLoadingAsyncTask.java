@@ -4,6 +4,9 @@ import android.os.AsyncTask;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import kiolk.com.github.mylibrary.utils.LogUtil;
+import kiolk.com.github.mylibrary.utils.MD5Util;
+
 public class ImageLoadingAsyncTask extends AsyncTask<ImageRequest, Void, ImageResult> {
 
     @Override
@@ -20,8 +23,11 @@ public class ImageLoadingAsyncTask extends AsyncTask<ImageRequest, Void, ImageRe
 
         if (pImageResult.getmBitmap() != null){
             ImageView imageView = pImageResult.getmRequest().getmTarget().get();
-            if(imageView.getTag().equals(pImageResult.getmRequest().getmUrl())) {
+            String tag = MD5Util.getHashString(pImageResult.getmRequest().getmUrl());
+            LogUtil.msg("Compare between " + tag + " and " + imageView.getTag());
+            if(imageView.getTag().equals(tag)) {
                 imageView.setImageBitmap(pImageResult.getmBitmap());
+                LogUtil.msg("set bmp from cache" + pImageResult.getmRequest().getmUrl()+ MD5Util.getHashString(pImageResult.getmRequest().getmUrl()));
             }
         }else{
             //Not very good idea show toast from AsyncTask only for example

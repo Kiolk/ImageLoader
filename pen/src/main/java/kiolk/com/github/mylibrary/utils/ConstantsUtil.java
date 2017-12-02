@@ -15,4 +15,6 @@ public class ConstantsUtil {
     public static final int PART_OF_MEMORY_CACHE = 4;
     public static final int QUALITY_OF_COMPRESSION_BMP = 100;
     public static final String SPLITTING_BY_SLASH = "/";
+    public static final String EMPTY_STRING = "";
+
 }
